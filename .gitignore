@@ -2,5 +2,5 @@
 .allaboutdocuments
 allaboutdocuments.egg-info
 notebook
-data
+logs
 README-wip.md
