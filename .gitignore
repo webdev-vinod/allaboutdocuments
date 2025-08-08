@@ -3,4 +3,5 @@
 allaboutdocuments.egg-info
 notebook
 logs
+**/__pycache__/
 README-wip.md
