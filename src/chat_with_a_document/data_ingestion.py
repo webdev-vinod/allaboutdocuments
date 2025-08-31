@@ -1,14 +1,17 @@
+# Standard Library Imports
 import sys
 import uuid
 from pathlib import Path
 from datetime import datetime, timezone
 
-# LangChain components
+# Third Party Imports
+
+# LangChain Core and Community Imports
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_community.vectorstores import FAISS
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-# Project-specific utilities
+# Custom Application Imports
 from logger.custom_logger import CustomLogger
 from exception.custom_exception import AllAboutDocumentsException
 from utils.model_loader import ModelLoader
@@ -76,9 +79,9 @@ class SingleDocumentIngestor:
             for uploaded_file in uploaded_files:
                 # Create a unique filename with timestamp and UUID
                 timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
-                original_extension = Path(uploaded_file.name).suffix
+                original_extension = Path(uploaded_file.name).suffix or ".pdf"
                 unique_filename = (
-                    f"{timestamp}_{uuid.uuid4().hex[:6]}{original_extension}"
+                    f"{timestamp}_{uuid.uuid4().hex[:8]}{original_extension}"
                 )
                 temp_path = self.data_dir / unique_filename
 
@@ -139,13 +142,14 @@ class SingleDocumentIngestor:
                 "FAISS index created and saved locally.", path=str(self.faiss_dir)
             )
 
-            # Return retriever object
+            # Return vectorstore as retriever object
             retriever = vectorstore.as_retriever(
                 search_type="similarity", search_kwargs={"k": 5}
             )
 
             self.logger.info(
-                "Retriever created successfully.", retriever_type=str(type(retriever))
+                "FAISS retriever created successfully.",
+                retriever_type=str(type(retriever)),
             )
             return retriever
 

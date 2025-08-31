@@ -37,8 +37,8 @@ class DocumentIngestion:
         # Generate unique session ID if not provided
         self.session_id = (
             session_id
-            or f"{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')}_{uuid.uuid4().hex[:6]}"
-            # f"session_{os.getenv('USER', 'anonymous')}_{datetime.utcnow().strftime('%Y%m%dT%H%M%S%fZ')}_{uuid.uuid4().hex[:6]}"
+            or f"{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')}_{uuid.uuid4().hex[:8]}"
+            # f"session_{os.getenv('USER', 'anonymous')}_{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')}_{uuid.uuid4().hex[:8]}"
         )
 
         self.session_path = self.base_dir / self.session_id

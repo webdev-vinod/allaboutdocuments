@@ -4,8 +4,6 @@ import sys
 
 # Third Party Imports
 import streamlit as st
-
-# LangChain Core and Community Imports
 from langchain_core.chat_history import BaseChatMessageHistory
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_community.chat_message_histories import ChatMessageHistory
@@ -37,6 +35,7 @@ class ConversationalRAG:
             session_id (str): Unique identifier for the conversation session.
             retriever: A document retriever (e.g., FAISS retriever).
         """
+        # Set up logging, track the current session, and configure the retriever for data access
         self.logger = CustomLogger().get_logger(__name__)
         self.session_id = session_id
         self.retriever = retriever
@@ -140,7 +139,7 @@ class ConversationalRAG:
 
     def load_retriever_from_faiss(self, index_path: str):
         """
-        Loads a FAISS-based retriever from the given local index path.
+        Loads a FAISS-based retriever from the given local index path and convert to a retriever.
 
         Args:
             index_path (str): Local path where FAISS index is stored.

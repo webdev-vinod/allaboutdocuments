@@ -1,7 +1,7 @@
 # Standard Library Imports
 import os
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 
 # Third-Party Imports
 import fitz  # PyMuPDF for PDF reading
@@ -77,14 +77,12 @@ class DocumentHandler:
         # Uncomment below if user/hostname-based session IDs are needed
         # hostname = socket.gethostname()
         # user_identifier = os.getenv("USER", "anonymous")
-        # timestamp = datetime.utcnow().strftime("%Y%m%dT%H%M%S%fZ")
-        # unique_part = uuid.uuid4().hex[:6]
+        # timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
+        # unique_part = uuid.uuid4().hex[:8]
         # return f"session_{user_identifier}_{hostname}_{timestamp}_{unique_part}"
         # return f"session_{user_identifier}_{timestamp}_{unique_part}"
 
-        return (
-            f"{datetime.utcnow().strftime('%Y%m%dT%H%M%S%fZ')}_{uuid.uuid4().hex[:6]}"
-        )
+        return f"{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')}_{uuid.uuid4().hex[:8]}"
 
     def save_pdf(self, file_to_be_analyzed):
         """

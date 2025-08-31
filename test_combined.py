@@ -2,7 +2,7 @@
 
 import io
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 import uuid
 
 from src.document_analyzer.data_ingestion import DocumentHandler
@@ -36,10 +36,10 @@ def test_document_analyzer():
     """
     Test function to perform document ingestion and metadata analysis.
     Steps:
-      1. Save PDF to session directory.
-      2. Extract text content from PDF.
-      3. Analyze extracted text for metadata using a pre-trained LLM.
-      4. Print the analysis results.
+        1. Save PDF to session directory.
+        2. Extract text content from PDF.
+        3. Analyze extracted text for metadata using a pre-trained LLM.
+        4. Print the analysis results.
     """
     try:
         # ---------- STEP 1: DATA INGESTION ----------
@@ -47,7 +47,7 @@ def test_document_analyzer():
         dummy_pdf = DummyFile(PDF_PATH)
 
         handler = DocumentHandler(
-            session_id=f"{datetime.utcnow().strftime('%Y%m%dT%H%M%S%fZ')}_{uuid.uuid4().hex[:6]}"
+            session_id=f"{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')}_{uuid.uuid4().hex[:8]}"
         )
 
         saved_path = handler.save_pdf(dummy_pdf)
@@ -113,7 +113,7 @@ def test_document_analyzer_with_dir():
         dummy_pdf = DummyFile(pdf_path)
 
         handler = DocumentHandler(
-            session_id=f"{datetime.utcnow().strftime('%Y%m%dT%H%M%S%fZ')}_{uuid.uuid4().hex[:6]}"
+            session_id=f"{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')}_{uuid.uuid4().hex[:8]}"
         )
 
         saved_path = handler.save_pdf(dummy_pdf)

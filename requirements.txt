@@ -13,4 +13,5 @@ structlog
 pandas
 streamlit
 pytest
+docx2txt
 -e .
