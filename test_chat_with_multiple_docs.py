@@ -23,10 +23,10 @@ FAISS_INDEX_PATH = Path("faiss_index")
 def test_conversational_rag_multiple_documents() -> None:
     try:
         test_files = [
-            "data\\chat_with_multiple_documents\\points to beat procrastination.docx",
-            "data\\chat_with_multiple_documents\\Python Architecture Patterns.pdf",
-            "data\\chat_with_multiple_documents\\STEPS TO PROCESS COLORS FILE IN EZ TITLES.txt",
-            "data\\chat_with_multiple_documents\\The Benefits of LLMs V2.pdf",
+            "data/chat_with_multiple_documents/points to beat procrastination.docx",
+            "data/chat_with_multiple_documents/Python Architecture Patterns.pdf",
+            "data/chat_with_multiple_documents/STEPS TO PROCESS COLORS FILE IN EZ TITLES.txt",
+            "data/chat_with_multiple_documents/The Benefits of LLMs V2.pdf"
         ]
 
         uploaded_files = []

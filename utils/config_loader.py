@@ -1,7 +1,7 @@
 import yaml
 
 
-def load_config_yaml(config_file_path: str = "config\config.yaml"):
+def load_config_yaml(config_file_path: str = "config/config.yaml"):
     """This function loads the config file
 
     Args:

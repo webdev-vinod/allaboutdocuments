@@ -1,5 +1,7 @@
 .env
-.allaboutdocuments
+.allaboutdoucments
+/.allaboutdocuments/
+.allaboutdocuments-old
 allaboutdocuments.egg-info
 /archive/
 /notebook/
