@@ -32,14 +32,15 @@ def test_conversational_rag_multiple_documents() -> None:
             print("No valid file to upload.")
             sys.exit(1)
 
-        ingestor = MultipleDocumentsIngestor()
+
+        session_id = "test_chat_with_multiple_documents"
+        
+        ingestor = MultipleDocumentsIngestor(session_id=session_id)
         retriever = ingestor.ingest_files(uploaded_files)
 
         for f in uploaded_files:
             f.close()
-
-        session_id = "test_chat_with_multiple_documents"
-
+        
         rag = ConversationalRAG(session_id=session_id, retriever=retriever)
 
         question = "What are the benefits of LLMs?"
