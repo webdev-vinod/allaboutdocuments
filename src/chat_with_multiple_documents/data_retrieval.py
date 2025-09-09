@@ -7,6 +7,7 @@ from typing import List, Optional
 # Third Party Imports
 from langchain_community.vectorstores import FAISS
 from langchain.schema import BaseMessage, StrOutputParser
+# from langchain_core.runnables import RunnableLambda
 
 
 # Custom Application Imports
@@ -39,13 +40,13 @@ class ConversationalRAG:
                 PromptType.CONTEXTUALIZE_QUESTION.value
             ]
             self.qa_prompt = PROMPT_REGISTRY[PromptType.CONTEXT_QA.value]
-
+            
             self.retriever = retriever
-
+            
             if self.retriever is None:
                 raise ValueError("Retriever cannot be None.")
 
-            # Build a LECL chain
+            # Build a LCEL chain
             self._build_lcel_chain()
             self.logger.info(
                 "ConversationalRAG initialized successfully.",
@@ -69,13 +70,12 @@ class ConversationalRAG:
             retriever: Configured FAISS retriever.
         """
         try:
+            embeddings = ModelLoader().load_embeddings()
             if not os.path.isdir(index_path):
                 raise FileNotFoundError(
                     f"FAISS index directory not found: {index_path}"
                 )
-
-            embeddings = ModelLoader().load_embeddings()
-
+            
             vectorstore = FAISS.load_local(
                 index_path, embeddings, allow_dangerous_deserialization=True
             )
@@ -89,6 +89,8 @@ class ConversationalRAG:
                 index_path=index_path,
                 session_id=self.session_id,
             )
+
+            # self._build_lcel_chain()
 
             return self.retriever
 
@@ -111,7 +113,7 @@ class ConversationalRAG:
             str: Generated answer or fallback string.
         """
         try:
-            chat_history = chat_history or []
+            chat_history = chat_history  or []
 
             payload = {"input": user_input, "chat_history": chat_history}
 
@@ -163,13 +165,11 @@ class ConversationalRAG:
             return llm
         except Exception as e:
             self.logger.error("Error loading language model.", error=str(e))
-            raise AllAboutDocumentsException(
-                "Failed to load language model via ModelLoader.", sys
-            )
+            raise AllAboutDocumentsException("Failed to load LLM via ModelLoader.", sys)
 
     @staticmethod
-    def format_documents(documents):
-        return "\n\n".join(document.page_content for document in documents)
+    def _format_documents(docs):
+        return "\n\n".join(d.page_content for d in docs)
 
     def _build_lcel_chain(self):
         try:
@@ -181,24 +181,22 @@ class ConversationalRAG:
                 }
                 | self.contextualize_prompt
                 | self.llm
-                | StrOutputParser
+                | StrOutputParser()
             )
 
             # Retrieve documents for rewritten question
-            retrieve_documents = (
-                question_rewriter | self.retriever | self.format_documents
-            )
+            retrieve_docs = question_rewriter | self.retriever | self._format_documents
 
             # Feed context + original input + chat history to the answer prompt
             self.chain = (
                 {
-                    "context": retrieve_documents,
+                    "context": retrieve_docs,
                     "input": itemgetter("input"),
                     "chat_history": itemgetter("chat_history"),
                 }
                 | self.qa_prompt
                 | self.llm
-                | StrOutputParser
+                | StrOutputParser()
             )
             self.logger.info(
                 "LCEL chain built.",

@@ -1,12 +1,3 @@
-"""
-Test script for Conversational Retrieval-Augmented Generation (RAG) on a single document.
-
-This script:
-1. Loads an existing FAISS index if available, otherwise creates one.
-2. Initializes a retriever from the FAISS index.
-3. Uses ConversationalRAG to answer a user question based on the document context.
-"""
-
 #  Standard Library Imports
 import sys
 from pathlib import Path
@@ -44,19 +35,19 @@ def test_conversational_rag_multiple_documents() -> None:
         ingestor = MultipleDocumentsIngestor()
         retriever = ingestor.ingest_files(uploaded_files)
 
-        for file in uploaded_files:
-            file.close()
+        for f in uploaded_files:
+            f.close()
 
         session_id = "test_chat_with_multiple_documents"
 
         rag = ConversationalRAG(session_id=session_id, retriever=retriever)
 
-        question = "What are the methods to beat procrastination?"
+        question = "What are the benefits of LLMs?"
 
         response = rag.invoke(question)
 
         print("\n++++++++++ RAG RESPONSE ++++++++++")
-        print(f"Question: {question}")
+        print(f"\n Question: {question}")
         print(f"Answer: {response}")
 
     except Exception as e:

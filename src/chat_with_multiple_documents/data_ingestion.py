@@ -9,6 +9,7 @@ from langchain_community.document_loaders import Docx2txtLoader, TextLoader
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_community.vectorstores import FAISS
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_core.vectorstores import VectorStoreRetriever
 
 # Local Application Imports
 from logger.custom_logger import CustomLogger
@@ -84,10 +85,10 @@ class MultipleDocumentsIngestor:
                 "❌ Error initializing MultipleDocumentsIngestor.", error=str(e)
             )
             raise AllAboutDocumentsException(
-                "Initialization failed for MultipleDocumentsIngestor.", e
+                "Initialization failed for MultipleDocumentsIngestor.", sys
             )
 
-    def ingest_files(self, uploaded_files) -> FAISS:
+    def ingest_files(self, uploaded_files) -> VectorStoreRetriever:
         """
         Ingest and process uploaded files, extract their content,
         and return a retriever for querying the data.
@@ -105,16 +106,18 @@ class MultipleDocumentsIngestor:
             documents = []
 
             for uploaded_file in uploaded_files:
-                timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
+            
                 uploaded_file_ext = Path(uploaded_file.name).suffix.lower()
 
                 # ⚠️ Skip unsupported file types
                 if uploaded_file_ext not in self.SUPPORTED_EXTENSIONS:
                     self.logger.warning(
-                        "⚠️ Unsupported file type skipped.", filename=uploaded_file.name
+                        "⚠️ Unsupported file type skipped.", skipped_filename=uploaded_file.name
                     )
                     continue
 
+                timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
+                
                 # 📄 Save the file to the session directory
                 unique_filename = (
                     f"{timestamp}_{uuid.uuid4().hex[:8]}{uploaded_file_ext}"
@@ -125,7 +128,7 @@ class MultipleDocumentsIngestor:
                     f.write(uploaded_file.read())
 
                 self.logger.info(
-                    "📄 Uploaded file saved locally.",
+                    "📄 Uploaded file saved locally for ingestion.",
                     filename=uploaded_file.name,
                     saved_as=str(temp_path),
                     session_id=self.session_id,
@@ -139,14 +142,15 @@ class MultipleDocumentsIngestor:
                 elif uploaded_file_ext == ".txt":
                     loader = TextLoader(str(temp_path), encoding="utf-8")
                 else:
+                    self.logger.warning("Unsupported file type encountered", filename=uploaded_file.name)
                     continue  # Should not happen due to earlier check
 
-                document = loader.load()
-                documents.extend(document)
+                docs = loader.load()
+                documents.extend(docs)
 
             # ❌ Handle case where no valid documents were loaded
             if not documents:
-                raise AllAboutDocumentsException("No valid documents were loaded.")
+                raise AllAboutDocumentsException("No valid documents were loaded.",sys)
 
             self.logger.info(
                 "📚 All valid files loaded successfully.",
@@ -159,46 +163,7 @@ class MultipleDocumentsIngestor:
         except Exception as e:
             self.logger.error("❌ Error ingesting files.", error=str(e))
             raise AllAboutDocumentsException(
-                "Failed to ingest files in MultipleDocumentsIngestor.", e
-            )
-
-    def _create_retriever(self, documents: list) -> FAISS:
-        """
-        Create a FAISS retriever from the provided documents.
-
-        Args:
-            documents (list): List of LangChain Document objects.
-
-        Returns:
-            FAISS: Configured retriever instance.
-        """
-        try:
-            # 🧠 Split text into chunks for vector embedding
-            text_splitter = RecursiveCharacterTextSplitter(
-                chunk_size=1000, chunk_overlap=200
-            )
-            split_docs = text_splitter.split_documents(documents)
-
-            # 🔍 Load embeddings and create vector store
-            embeddings = self.model_loader.load_embeddings()
-            vectorstore = FAISS.from_documents(split_docs, embedding=embeddings)
-
-            # 💾 Persist vector store to disk
-            vectorstore.save_local(str(self.session_faiss_dir))
-
-            self.logger.info(
-                "✅ FAISS index created and saved.",
-                total_chunks=len(split_docs),
-                faiss_index_path=str(self.session_faiss_dir),
-                session_id=self.session_id,
-            )
-
-            return vectorstore.as_retriever()
-
-        except Exception as e:
-            self.logger.error("❌ Failed to create FAISS retriever.", error=str(e))
-            raise AllAboutDocumentsException(
-                "Failed to create retriever from documents.", e
+                "Failed to ingest files in MultipleDocumentsIngestor.", sys
             )
 
     def _create_retriever(self, documents):
@@ -224,13 +189,13 @@ class MultipleDocumentsIngestor:
             )
 
             # Load embedding model
-            embedding = self.model_loader.load_embeddings()
+            embeddings = self.model_loader.load_embeddings()
 
             # Create FAISS vector index
-            vectorstore = FAISS.from_documents(documents=chunks, embedding=embedding)
+            vectorstore = FAISS.from_documents(documents=chunks, embedding=embeddings)
 
-            # Save FAISS index to disk
-            vectorstore.save_local(self.faiss_dir)
+            # Save FAISS index to disk in session folder
+            vectorstore.save_local(str(self.session_faiss_dir))
             self.logger.info(
                 "💾 FAISS index created and saved locally.",
                 path=self.faiss_dir,

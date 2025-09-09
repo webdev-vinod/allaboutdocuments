@@ -89,7 +89,7 @@ class ModelLoader:
 
         # since there is no value set for LLM_PROVIDER in .env file,
         # the fallback value 'groq' is set as the default llm provider
-        llm_provider_key = os.getenv("LLM_PROVIDER", "groq")
+        llm_provider_key = os.getenv("LLM_PROVIDER", "google")
 
         # raise an exception if the LLM provider key is not present in config.YAML file
         if llm_provider_key not in llm_block:
@@ -126,7 +126,7 @@ class ModelLoader:
 
         elif llm_provider == "groq":
             llm = ChatGroq(
-                model_name=llm_model_name,
+                model=llm_model_name,
                 api_key=self.api_keys["GROQ_API_KEY"],
                 temperature=temperature,
             )
